@@ -1,0 +1,1 @@
+from .constants import PEOPLE_SCHEMA, PEOPLE_SCHEMA

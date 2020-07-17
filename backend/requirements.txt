@@ -1,0 +1,7 @@
+avro-python3==1.10.0
+flask
+flask-cors
+redis
+avro-json-serializer
+fastavro
+debugpy

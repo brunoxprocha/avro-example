@@ -1,0 +1,30 @@
+{
+    "tasks": [
+        {
+            "type": "docker-run",
+            "label": "docker-run: debug",
+            "dependsOn": [
+              "docker-build"
+            ],
+            "dockerRun": {
+                "env": {
+                  "FLASK_APP": "app/app.py",
+                  "FLASK_ENV": "development"
+                },
+                "volumes": [
+                  {
+                    "containerPath": "/app", "localPath": "${workspaceFolder}"
+                  }
+                ]
+              },
+              "python": {
+                "args": [
+                  "run",
+                  "--host", "0.0.0.0",
+                  "--port", "5000"
+                ],
+                "module": "flask"
+              }
+        }
+    ]
+  }

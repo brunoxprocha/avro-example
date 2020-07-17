@@ -1,0 +1,14 @@
+version: '3'
+services:
+  avro-backend:
+    image: avro-backend
+    container_name: avro-backend
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/:/app
+    working_dir: /app
+    command: python app.py
