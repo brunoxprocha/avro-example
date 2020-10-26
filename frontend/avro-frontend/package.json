@@ -9,21 +9,28 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "avro-js": "^1.10.0",
-    "avsc": "^5.4.21",
+    "avsc": "^5.5.2",
     "axios": "^0.19.2",
+    "google-protobuf": "^3.13.0",
+    "protobufjs": "^6.10.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
+    "ts-protoc-gen": "^0.4.0",
     "typescript": "^3.9.7"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "proto": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --js_out=import_style=commonjs,binary:./src --js_service_out=./src proto/*.proto"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "ignorePatterns": [
+      "**/*_pb.js"
+    ]
   },
   "browserslist": {
     "production": [

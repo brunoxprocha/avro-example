@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -11,13 +11,17 @@ import Paper from '@material-ui/core/Paper';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import Switch from '@material-ui/core/Switch';
 import Grid from '@material-ui/core/Grid';
 import Modal from '@material-ui/core/Modal';
 import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
 import { peopleType } from '../util/constants'
 import AddForm from './AddForm';
+import ProtobufManager from '../proto/people';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -33,40 +37,6 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2, 4, 3),
   },
 }));
-
-const AntSwitch = withStyles((theme) => ({
-  root: {
-    width: 28,
-    height: 16,
-    padding: 0,
-    display: 'flex',
-  },
-  switchBase: {
-    padding: 2,
-    color: theme.palette.grey[500],
-    '&$checked': {
-      transform: 'translateX(12px)',
-      color: theme.palette.common.white,
-      '& + $track': {
-        opacity: 1,
-        backgroundColor: theme.palette.primary.main,
-        borderColor: theme.palette.primary.main,
-      },
-    },
-  },
-  thumb: {
-    width: 12,
-    height: 12,
-    boxShadow: 'none',
-  },
-  track: {
-    border: `1px solid ${theme.palette.grey[500]}`,
-    borderRadius: 16 / 2,
-    opacity: 1,
-    backgroundColor: theme.palette.common.white,
-  },
-  checked: {},
-}))(Switch);
 
 function rand() {
   return Math.round(Math.random() * 20) - 10;
@@ -88,11 +58,11 @@ export default function SimpleTable() {
 
     const [modalStyle] = useState(getModalStyle);
     const [rows, setRows] = useState([]);
-    const [checked, setChecked] = useState(true);
+    const [checked, setChecked] = useState('json');
     const [openModal, setOpenModal] = useState(false);
 
     const handleChange = (event) => {
-      setChecked(event.target.checked);
+      setChecked(event.target.value);
     };
 
     const handleModal = (value) => {
@@ -101,13 +71,27 @@ export default function SimpleTable() {
 
     useEffect(() => {
         (async () => {
-          if (checked) {
-            const result = await axios("http://localhost:5000/avro");
-            var data = peopleType.fromBuffer(Buffer.from(result.data, 'utf8'));
-            setRows(data);
-          } else {
-            const result = await axios("http://localhost:5000/json");
-            setRows(result.data);
+          switch (checked) {
+            case 'avro':
+              const resultAvro = await axios("http://localhost:5000/avro");
+              var buffer = Buffer.from(resultAvro.data, 'binary');
+              var data = peopleType.fromBuffer(buffer);
+              setRows(data);
+              break;
+            case 'json':
+              var resultJson = await axios("http://localhost:5000/json");
+              setRows(resultJson.data);
+              break;
+            case 'protobuf':
+              const resultProtobuf = await axios("http://localhost:5000/protobuf");
+              const client = ProtobufManager.getInstance();
+              var dataProtobuf = client.decodePeople(Buffer.from(resultProtobuf.data, 'binary'));
+              setRows(dataProtobuf.people);
+              break;
+            default:
+              const result = await axios("http://localhost:5000/json");
+              setRows(result.data);
+              break;
           }
         })();
       }, [checked, openModal]);
@@ -148,11 +132,28 @@ export default function SimpleTable() {
               <AddIcon />
             </Fab>
             <Grid component="label" container alignItems="center" spacing={1}>
-              <Grid item>Json</Grid>
-              <Grid item>
-                <AntSwitch checked={checked} onChange={handleChange} name="checkedC" />
-              </Grid>
-              <Grid item>Avro</Grid>
+              <FormControl component="fieldset">
+                <RadioGroup row aria-label="position" name="position" defaultValue="json" value={checked} onChange={handleChange}>
+                  <FormControlLabel
+                    value="json"
+                    control={<Radio color="primary" />}
+                    label="JSON"
+                    labelPlacement="start"
+                  />
+                  <FormControlLabel
+                    value="protobuf"
+                    control={<Radio color="primary" />}
+                    label="Protobuf"
+                    labelPlacement="start"
+                  />
+                  <FormControlLabel
+                    value="avro"
+                    control={<Radio color="primary" />}
+                    label="Avro"
+                    labelPlacement="start"
+                  />
+                </RadioGroup>
+              </FormControl>
             </Grid>
             <Modal
               open={openModal}

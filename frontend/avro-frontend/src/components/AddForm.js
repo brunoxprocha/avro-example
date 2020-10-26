@@ -17,7 +17,7 @@ export default function AddForm(props) {
             name,
             email,
             phone,
-            age: Number(age),
+            age: String(age),
             interests: []
         };
         console.log(person);
