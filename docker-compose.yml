@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   avro-backend:
     image: avro-backend
@@ -12,3 +12,16 @@ services:
       - ./backend/:/app
     working_dir: /app
     command: python app.py
+  avro-frontend:
+    stdin_open: true
+    container_name: avro-frontend
+    build:
+      context: ./frontend/avro-frontend
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - '/app/node_modules'
+      - ./frontend/avro-frontend:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
